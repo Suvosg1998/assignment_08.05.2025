@@ -1,5 +1,6 @@
 const employeeModel = require('../models/employee.model');
 const uuId = require('uuid');
+const mongoose = require('mongoose');
 
 class EmployeeController {
     // Create a new employee
@@ -20,6 +21,11 @@ class EmployeeController {
         try {
             const employees = await employeeModel.aggregate([
                 {
+                    $match: {
+                        isDeleted: { $ne: true }
+                    }
+                },
+                {
                     $lookup: {
                         from: 'departments',
                         localField: 'department',
@@ -35,6 +41,7 @@ class EmployeeController {
                         empID: 1,
                         name: 1,
                         departmentName: '$departmentDetails.name',
+                        department: 1,
                         experience: 1,
                         salary: 1,
                         hireDate: 1,
@@ -53,7 +60,10 @@ class EmployeeController {
             const { id } = req.params;
             const employee = await employeeModel.aggregate([
                 {
-                    $match: { _id: id }
+                    $match: {
+                        isDeleted: { $ne: true },
+                        _id: new mongoose.Types.ObjectId(id)
+                    }
                 },
                 {
                     $lookup: {
@@ -71,6 +81,7 @@ class EmployeeController {
                         empID: 1,
                         name: 1,
                         departmentName: '$departmentDetails.name',
+                        department: 1,
                         experience: 1,
                         salary: 1,
                         hireDate: 1,
